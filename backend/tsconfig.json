@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",                /* Use a modern JS version */
     "module": "commonjs",              /* Node.js friendly */
-    "rootDir": "./src",                /* Where your TS source files live */
+    "rootDir": "./",                   /* Include all TS files */
     "outDir": "./dist",                /* Where compiled JS will go */
     "esModuleInterop": true,           
     "forceConsistentCasingInFileNames": true,
