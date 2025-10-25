@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "nodemon --exec ts-node server.ts",
     "build": "tsc",
-    "start": "npm run build && node dist/server.js",
-    "postinstall": "npm run build"
+    "start": "node dist/server.js",
+    "postinstall": "npm run build",
+    "deploy": "chmod +x start.sh && ./start.sh"
   },
   "keywords": [],
   "author": "",
