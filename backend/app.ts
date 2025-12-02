@@ -36,4 +36,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/routes', routeRoutes);
 
+// Add a keep-alive endpoint to prevent the server from sleeping
+app.get('/keep-alive', (req, res) => {
+    res.status(200).send('Server is alive');
+});
+
 export default app;
