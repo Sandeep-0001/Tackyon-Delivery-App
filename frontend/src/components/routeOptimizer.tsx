@@ -444,12 +444,14 @@ const RouteOptimizer: React.FC<RouteOptimizerProps> = ({ showNotification }) => 
 
 export default RouteOptimizer;
 
-// Updated the optimizeDeliveryPath function to handle a single cluster scenario
-function optimizeDeliveryPath() {
-    if (deliveryPoints.length < 2) {
-        alert('Please add at least two points to optimize the route');
+// Updated the optimizeDeliveryPath function to ensure proper routes are displayed using Leaflet Routing Machine
+function optimizeDeliveryPath(k) {
+    if (!k || k <= 0) {
+        alert('Please enter a valid number of clusters');
         return;
     }
+
+    const clusters = kMeansClustering(deliveryPoints, k);
 
     map.eachLayer((layer) => {
         if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.Routing.Control) {
@@ -457,26 +459,37 @@ function optimizeDeliveryPath() {
         }
     });
 
-    deliveryPoints.forEach((point) => {
-        const marker = L.marker([point.lat, point.lng]).addTo(map);
-        marker.bindPopup(`<p>${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}</p>`).openPopup();
+    clusters.forEach((point, index) => {
+        const marker = L.marker([point.lat, point.lng], {
+            icon: L.divIcon({
+                className: 'text-center',
+                html: `<div class="bg-red-500 text-white p-1 rounded-full">${point.centroidIndex}</div>`,
+                iconSize: [30, 30]
+            })
+        }).addTo(map);
+        marker.bindPopup(`<div class="marker-popup bg-white shadow-md rounded-lg p-2"><p>${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}</p></div>`).openPopup();
     });
 
-    const optimizedPath = solveTSP(deliveryPoints);
+    displayClusterInfo(clusters);
 
-    if (optimizedPath.length > 1) {
-        const waypoints = optimizedPath.map(point => L.latLng(point.lat, point.lng));
+    for (let i = 0; i < k; i++) {
+        const clusterPoints = clusters.filter(point => point.centroidIndex === i);
+        const optimizedPath = solveTSP(clusterPoints);
 
-        L.Routing.control({
-            waypoints: waypoints,
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1'
-            }),
-            createMarker: () => null,
-            lineOptions: {
-                styles: [{ color: "#FF0000", weight: 4 }]
-            },
-            show: false
-        }).addTo(map);
+        if (optimizedPath.length > 1) {
+            const waypoints = optimizedPath.map(point => L.latLng(point.lat, point.lng));
+
+            L.Routing.control({
+                waypoints: waypoints,
+                router: L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1'
+                }),
+                createMarker: () => null,
+                lineOptions: {
+                    styles: [{ color: i % 2 === 0 ? "#FF0000" : "#0000FF", weight: 4 }]
+                },
+                show: false
+            }).addTo(map);
+        }
     }
 }
