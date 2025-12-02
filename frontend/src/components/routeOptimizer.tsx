@@ -443,3 +443,40 @@ const RouteOptimizer: React.FC<RouteOptimizerProps> = ({ showNotification }) => 
 };
 
 export default RouteOptimizer;
+
+// Updated the optimizeDeliveryPath function to handle a single cluster scenario
+function optimizeDeliveryPath() {
+    if (deliveryPoints.length < 2) {
+        alert('Please add at least two points to optimize the route');
+        return;
+    }
+
+    map.eachLayer((layer) => {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.Routing.Control) {
+            map.removeLayer(layer);
+        }
+    });
+
+    deliveryPoints.forEach((point) => {
+        const marker = L.marker([point.lat, point.lng]).addTo(map);
+        marker.bindPopup(`<p>${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}</p>`).openPopup();
+    });
+
+    const optimizedPath = solveTSP(deliveryPoints);
+
+    if (optimizedPath.length > 1) {
+        const waypoints = optimizedPath.map(point => L.latLng(point.lat, point.lng));
+
+        L.Routing.control({
+            waypoints: waypoints,
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }),
+            createMarker: () => null,
+            lineOptions: {
+                styles: [{ color: "#FF0000", weight: 4 }]
+            },
+            show: false
+        }).addTo(map);
+    }
+}
