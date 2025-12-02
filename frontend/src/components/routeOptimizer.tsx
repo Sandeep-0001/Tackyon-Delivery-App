@@ -443,5 +443,3 @@ const RouteOptimizer: React.FC<RouteOptimizerProps> = ({ showNotification }) => 
 };
 
 export default RouteOptimizer;
-
-export {};
